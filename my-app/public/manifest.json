@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "GreenChoice",
+  "version": "0.1.0",
+  "description": "Detectează alternative eco pe paginile de produse.",
+  "permissions": ["storage"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
