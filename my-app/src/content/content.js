@@ -1,21 +1,13 @@
-import { mountGreenChoice } from "../injected/mount.js";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
-const API_BASE = "https://greenchoice-api.<subdomain>.workers.dev";
-
-/**
- * Extrage informații din pagină folosind:
- * 1. Heuristici DOM
- * 2. JSON-LD (schema.org Product) dacă există
- */
+// Extrage info produs (exact ca la tine)
 function getProductPayload() {
   let title =
-    document.querySelector("h1")?.textContent?.trim() ||
-    document.title;
+    document.querySelector("h1")?.textContent?.trim() || document.title;
 
   let description = "";
   let price = "";
 
-  // === Încearcă JSON-LD (cel mai corect) ===
   const scripts = document.querySelectorAll('script[type="application/ld+json"]');
   for (const script of scripts) {
     try {
@@ -34,38 +26,34 @@ function getProductPayload() {
     } catch {}
   }
 
-  // === fallback DOM ===
   if (!description) {
     description =
       document.querySelector(
         '[data-testid*="description"], .description, .product-description'
-      )?.textContent?.trim() ||
-      document.body.innerText.slice(0, 3000);
+      )?.textContent?.trim() || document.body.innerText.slice(0, 3000);
   }
 
   if (!price) {
     price =
-      document.querySelector(
-        '[data-testid*="price"], .price, .product-price'
-      )?.textContent?.trim() || "";
+      document.querySelector('[data-testid*="price"], .price, .product-price')
+        ?.textContent?.trim() || "";
   }
 
-  return {
-    url: location.href,
-    title,
-    description,
-    price,
-  };
+  return { url: location.href, title, description, price };
 }
 
-/**
- * Rulează doar dacă pare pagină de produs
- */
 function isLikelyProductPage() {
-  return (
-    document.querySelector("h1") &&
-    document.body.innerText.length > 200
-  );
+  return document.querySelector("h1") && document.body.innerText.length > 200;
+}
+
+function injectMount() {
+  if (document.getElementById("greenchoice-mount")) return;
+
+  const s = document.createElement("script");
+  s.id = "greenchoice-mount";
+  s.type = "module";
+  s.src = chrome.runtime.getURL("injected/mount.js");
+  (document.head || document.documentElement).appendChild(s);
 }
 
 async function run() {
@@ -73,16 +61,14 @@ async function run() {
 
   const payload = getProductPayload();
 
-  // mic delay ca să nu se injecteze înainte de layout stabil
-  setTimeout(() => {
-    mountGreenChoice({
-      apiBase: API_BASE,
-      payload,
-    });
-  }, 600);
+  window.__GREENCHOICE__ = {
+    apiBase: API_BASE,
+    payload,
+  };
+
+  setTimeout(injectMount, 300);
 }
 
-// Rulează când pagina e gata
 if (document.readyState === "complete" || document.readyState === "interactive") {
   run();
 } else {
