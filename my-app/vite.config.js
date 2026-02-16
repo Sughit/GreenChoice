@@ -22,7 +22,7 @@ export default defineConfig({
       input: {
         ui: resolve(__dirname, "index.html"),
         content: resolve(__dirname, "src/content/content.js"),
-        mount: resolve(__dirname, "src/injected/mount.js"),
+        mount: resolve(__dirname, "src/injected/mount.jsx"),
       },
       output: {
         entryFileNames: (chunk) => {
