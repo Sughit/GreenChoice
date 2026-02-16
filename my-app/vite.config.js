@@ -10,8 +10,7 @@ export default defineConfig({
     tailwindcss(),
     viteStaticCopy({
       targets: [
-        { src: "public/manifest.json", dest: "." },
-        { src: "src/content/style.css", dest: "content", rename: "content.css" }
+        { src: "public/manifest.json", dest: "." }
       ],
     }),
   ],
