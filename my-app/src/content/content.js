@@ -46,6 +46,15 @@ function isLikelyProductPage() {
   return document.querySelector("h1") && document.body.innerText.length > 200;
 }
 
+function injectConfigToPage(config) {
+  // rulează în contextul paginii (nu în content script)
+  const cfg = document.createElement("script");
+  cfg.id = "greenchoice-config";
+  cfg.textContent = `window.__GREENCHOICE__ = ${JSON.stringify(config)};`;
+  (document.head || document.documentElement).appendChild(cfg);
+  cfg.remove();
+}
+
 function injectMount() {
   if (document.getElementById("greenchoice-mount")) return;
 
@@ -56,17 +65,41 @@ function injectMount() {
   (document.head || document.documentElement).appendChild(s);
 }
 
+let lastConfig = null;
+
+function sendConfig() {
+  if (!lastConfig) return;
+  window.postMessage(
+    {
+      source: "greenchoice",
+      type: "GREENCHOICE_CONFIG",
+      apiBase: lastConfig.apiBase,
+      payload: lastConfig.payload,
+    },
+    "*"
+  );
+}
+
+window.addEventListener("message", (event) => {
+  const data = event.data;
+  if (!data || data.source !== "greenchoice") return;
+
+  if (data.type === "GREENCHOICE_REQUEST_CONFIG") {
+    sendConfig();
+  }
+});
+
 async function run() {
+  console.log("[GreenChoice] content script running");
   if (!isLikelyProductPage()) return;
 
   const payload = getProductPayload();
+  lastConfig = { apiBase: API_BASE, payload };
 
-  window.__GREENCHOICE__ = {
-    apiBase: API_BASE,
-    payload,
-  };
+  injectMount();
 
-  setTimeout(injectMount, 300);
+  // trimite o dată imediat (în caz că mount e deja gata)
+  sendConfig();
 }
 
 if (document.readyState === "complete" || document.readyState === "interactive") {

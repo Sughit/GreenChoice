@@ -24,12 +24,13 @@ export default defineConfig({
         mount: resolve(__dirname, "src/injected/mount.jsx"),
       },
       output: {
+        manualChunks: undefined, 
         entryFileNames: (chunk) => {
           if (chunk.name === "content") return "content/content.js";
           if (chunk.name === "mount") return "injected/mount.js";
           return "assets/[name]-[hash].js";
         },
-      },
+      }
     },
   },
 });

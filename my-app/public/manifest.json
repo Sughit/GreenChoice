@@ -14,7 +14,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["injected/mount.js"],
+      "resources": ["injected/mount.js", "assets/*"],
       "matches": ["<all_urls>"]
     }
   ]
