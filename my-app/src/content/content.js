@@ -91,14 +91,18 @@ window.addEventListener("message", (event) => {
 
 async function run() {
   console.log("[GreenChoice] content script running");
-  if (!isLikelyProductPage()) return;
+  if (!isLikelyProductPage()) {
+    console.log("[GreenChoice] not a product page");
+    return;
+  }
 
   const payload = getProductPayload();
+  console.log("[GreenChoice] extracted payload:", payload);
+
   lastConfig = { apiBase: API_BASE, payload };
+  console.log("[GreenChoice] apiBase:", API_BASE);
 
   injectMount();
-
-  // trimite o dată imediat (în caz că mount e deja gata)
   sendConfig();
 }
 
